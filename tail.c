@@ -39,12 +39,67 @@ void tail(int fd, char *name) {
 	
 }
 
+
+void tail_stdi(int fd, char *name) {
+	int n, total_number_of_lines;
+	total_number_of_lines = 0;
+	int char_count = 0;
+	int i = 0;
+
+	while((n = read(fd, &buf[char_count], sizeof(buf))) > 0){
+		for(i = 0; i<n; i++){
+			if(buf[i] == '\n')
+				total_number_of_lines++;
+		}
+		char_count += n;
+	}
+
+	printf(1, "total lines: %d\n", total_number_of_lines);
+	printf(1, "num chars: %d\n", char_count);
+
+	// int current_line_number;
+	// int index_of_first_line = (total_number_of_lines > 10 ? total_number_of_lines - 10 : 0);
+	// current_line_number = 0;
+
+	// printf(1, "value of index first line %d\n", index_of_first_line);
+
+	write(1, buf, char_count);
+
+	// for(i = 0; i<chars_count; i++){
+	// 	printf(1, "value of i: %d\n", i);
+	// 	if(buf[i] == '\n') {
+	// 		current_line_number++;
+	// 	}
+	// 	if(current_line_number == index_of_first_line) {
+	// 		write(1, &buf[i], chars_count);
+	// 		break;
+	// 	}
+	// }
+	// for(i = 0; i<n; i++) {
+	// 	if(buf[i] == '\n') {
+	// 			current_line_number++;
+	// 		}
+	// 		if(current_line_number == index_of_first_line) {
+	// 			write(1, &buf[i], n);
+	// 			break;
+	// 		}
+	// 	}
+	// }
+
+	if(n < 0) {
+		printf(1, "tail: read error\n");
+		exit();
+	}
+	
+}
+
+
 int main(int argc, char *argv[]) {
 	
 	int fd, x;
 
 	if(argc <= 1) {
-		tail(0, "");
+		tail_stdi(0, "");
 		exit();
 	}
 

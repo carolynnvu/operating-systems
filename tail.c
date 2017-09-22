@@ -40,7 +40,6 @@ void tail(int fd, char *name) {
 	
 }
 
-
 void tail_stdi(int fd, char *name) {
 	int n, total_number_of_lines;
 	total_number_of_lines = 0;
@@ -48,7 +47,7 @@ void tail_stdi(int fd, char *name) {
 	int i = 0;
 
 	while((n = read(fd, &buf[char_count], sizeof(buf))) > 0){
-		for(i = 0; i<n; i++){
+		for(i = char_count; i < (n + char_count); i++){
 			if(buf[i] == '\n')
 				total_number_of_lines++;
 		}
@@ -58,7 +57,7 @@ void tail_stdi(int fd, char *name) {
 	int current_line_number = 0;
 	int index_of_first_line = (total_number_of_lines > 10 ? total_number_of_lines - 10 : 0);
 
-	// write(1, buf, char_count);
+	printf(1, "num lines: %d\n", total_number_of_lines);
 
 	for(i = 0; i<char_count; i++){
 		if(buf[i] == '\n') {
@@ -69,9 +68,7 @@ void tail_stdi(int fd, char *name) {
 			break;
 		}
 	}
-	
 }
-
 
 int main(int argc, char *argv[]) {
 	

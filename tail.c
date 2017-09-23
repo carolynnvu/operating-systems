@@ -4,7 +4,7 @@
 
 #define DEFAULT_TAIL_LEN 10
 
-int tail_len;
+int tail_len = DEFAULT_TAIL_LEN;
 char buf[4096];
 
 
@@ -29,6 +29,7 @@ void tail(int fd, char *name) {
 
 	int index_of_first_line = ((total_number_of_lines > tail_len) ? (total_number_of_lines - tail_len) : 0); 
 	int current_line_number = 0;
+
 	
 	for(i = 0; i<n; i++) {
 		if(buf[i] == '\n') {
@@ -42,6 +43,7 @@ void tail(int fd, char *name) {
 }
 
 void tail_stdi(int fd, char *name) {
+
 	int n, total_number_of_lines;
 	total_number_of_lines = 0;
 	int char_count = 0;
@@ -56,7 +58,7 @@ void tail_stdi(int fd, char *name) {
 	}
 
 	int current_line_number = 0;
-	int index_of_first_line = (total_number_of_lines > DEFAULT_TAIL_LEN ? total_number_of_lines - DEFAULT_TAIL_LEN : 0);
+	int index_of_first_line = ((total_number_of_lines > tail_len) ? (total_number_of_lines - tail_len) : 0);
 
 	for(i = 0; i<char_count; i++){
 		if(buf[i] == '\n') {
@@ -70,13 +72,12 @@ void tail_stdi(int fd, char *name) {
 }
 
 void set_tail_len(char *str) {
-	if(str[0] != '-') 
-		tail_len = DEFAULT_TAIL_LEN;
+	if(str[0] != '-') return ;
 	else {
 		char * str_cp = str;
 		str_cp = str_cp + 1;
 		if(str_cp[0] == '\0') {
-			tail_len = DEFAULT_TAIL_LEN;
+			return ;
 		} else { 
 			tail_len = atoi(str_cp);
 		}
@@ -94,23 +95,24 @@ int get_num_of_files(int tail_len_flag, int num_args) {
 }
 
 int main(int argc, char *argv[]) {
+
+	if(argc <= 1) { //just tail
+		tail_stdi(0, "");
+		exit();
+	}
 	
+	char *str_cp = argv[1];
+	int tail_len_flag = str_is_tail_len_flag(str_cp);
+	if(tail_len_flag) set_tail_len(str_cp);
 	int fd, x, start_index;
 
-	if(argc <= 1) {
+	if((argc <= 2) && (tail_len_flag)) { //either (tail tail_flag ^ tail file_name)
 		tail_stdi(0, "");
 		exit();
 	}
 
-	char *str_cp = argv[1];
-	int tail_len_flag = str_is_tail_len_flag(str_cp);
-	if(tail_len_flag) {
-		start_index = 2;
-		set_tail_len(str_cp);
-	} else {
-		tail_len = DEFAULT_TAIL_LEN;
-		start_index = 1;
-	}
+	if(tail_len_flag) start_index = 2;
+	else start_index = 1;
 
 	int num_files = get_num_of_files(tail_len_flag, argc);
 

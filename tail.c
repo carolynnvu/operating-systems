@@ -39,7 +39,6 @@ void tail(int fd, char *name) {
 			break;
 		}
 	}
-	
 }
 
 void tail_stdi(int fd, char *name) {
@@ -88,6 +87,12 @@ int str_is_tail_len_flag(char *str) {
 	return (str[0] == '-') ? 1 : 0;
 }
 
+int get_num_of_files(int tail_len_flag, int num_args) {
+	int num_files = num_args - 1;
+	if(tail_len_flag) num_files -= 1;
+	return num_files;
+}
+
 int main(int argc, char *argv[]) {
 	
 	int fd, x, start_index;
@@ -98,7 +103,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	char *str_cp = argv[1];
-	if(str_is_tail_len_flag(str_cp)) {
+	int tail_len_flag = str_is_tail_len_flag(str_cp);
+	if(tail_len_flag) {
 		start_index = 2;
 		set_tail_len(str_cp);
 	} else {
@@ -106,14 +112,17 @@ int main(int argc, char *argv[]) {
 		start_index = 1;
 	}
 
+	int num_files = get_num_of_files(tail_len_flag, argc);
 
 	for(x = start_index; x < argc; x++){
 		if((fd = open(argv[x], 0)) < 0){ 
 			printf(1, "tail: cannot open %s\n", argv[x]);
 			exit();
 		}
+		if(num_files > 1) printf(1, "==> %s <==\n", argv[x]);
 		tail(fd, argv[x]);
 		close(fd);
+		if((num_files > 1) && (x < argc-1)) printf(1, "\n");
 	}
 
 	exit();

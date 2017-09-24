@@ -9,7 +9,7 @@ char buf[4096];
 
 
 int get_index_of_first_line(int lines, int tail_len) {
-	return (lines > tail_len) ? (lines - tail_len) : 0; //we don't do lines - tail_len + 1, index starts at 0
+	return (lines > tail_len) ? (lines - tail_len) : 0;
 }
 
 void set_tail_len(char *str) {

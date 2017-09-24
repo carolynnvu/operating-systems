@@ -9,7 +9,7 @@ char buf[4096];
 
 
 int get_index_of_first_line(int lines, int tail_len) {
-	return (lines > tail_len) ? (lines - tail_len) : 0;
+	return (lines > tail_len) ? (lines - tail_len) : 0; //we don't do lines - tail_len + 1, index starts at 0
 }
 
 void set_tail_len(char *str) {
@@ -60,12 +60,12 @@ void tail(int fd, char *name) {
 	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
 	
 	for(i = 0; i<n; i++) {
-		if(buf[i] == '\n') {
-			current_line_number++;
-		}
 		if(current_line_number == index_of_first_line) {
 			write(1, &buf[i], n);
 			break;
+		}
+		if(buf[i] == '\n') {
+			current_line_number++;
 		}
 	}
 }
@@ -89,12 +89,12 @@ void tail_stdin(int fd, char *name) {
 	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
 
 	for(i = 0; i<char_count; i++){
-		if(buf[i] == '\n') {
-			current_line_number++;
-		}
 		if(current_line_number == index_of_first_line) {
 			write(1, &buf[i], char_count);
 			break;
+		}
+		if(buf[i] == '\n') {
+			current_line_number++;
 		}
 	}
 }

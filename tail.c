@@ -8,67 +8,8 @@ int tail_len = DEFAULT_TAIL_LEN;
 char buf[4096];
 
 
-void tail(int fd, char *name) {
-
-	int n, total_number_of_lines, i;
-	total_number_of_lines = 0;
-
-	n = read(fd, buf, sizeof(buf));
-
-	if(n > 0){
-		for(i = 0; i<n; i++){
-			if(buf[i] == '\n')
-				total_number_of_lines++;
-		}
-	}
-
-	if(n < 0) {
-		printf(1, "tail: read error\n");
-		exit();
-	}
-
-	int index_of_first_line = ((total_number_of_lines > tail_len) ? (total_number_of_lines - tail_len) : 0); 
-	int current_line_number = 0;
-
-	
-	for(i = 0; i<n; i++) {
-		if(buf[i] == '\n') {
-			current_line_number++;
-		}
-		if(current_line_number == index_of_first_line) {
-			write(1, &buf[i], n);
-			break;
-		}
-	}
-}
-
-void tail_stdi(int fd, char *name) {
-
-	int n, total_number_of_lines;
-	total_number_of_lines = 0;
-	int char_count = 0;
-	int i = 0;
-
-	while((n = read(fd, &buf[char_count], sizeof(buf))) > 0){
-		for(i = char_count; i < (n + char_count); i++){
-			if(buf[i] == '\n')
-				total_number_of_lines++;
-		}
-		char_count += n;
-	}
-
-	int current_line_number = 0;
-	int index_of_first_line = ((total_number_of_lines > tail_len) ? (total_number_of_lines - tail_len) : 0);
-
-	for(i = 0; i<char_count; i++){
-		if(buf[i] == '\n') {
-			current_line_number++;
-		}
-		if(current_line_number == index_of_first_line) {
-			write(1, &buf[i], char_count);
-			break;
-		}
-	}
+int get_index_of_first_line(int lines, int tail_len) {
+	return (lines > tail_len) ? (lines - tail_len) : 0;
 }
 
 void set_tail_len(char *str) {
@@ -94,10 +35,74 @@ int get_num_of_files(int tail_len_flag, int num_args) {
 	return num_files;
 }
 
+void tail(int fd, char *name) {
+
+	int n, total_number_of_lines, i;
+	total_number_of_lines = 0;
+
+	n = read(fd, buf, sizeof(buf));
+
+	if(n > 0){
+		for(i = 0; i<n; i++){
+			if(buf[i] == '\n')
+				total_number_of_lines++;
+		}
+	}
+
+	if(n == 0) exit();
+
+	if(n < 0) {
+		printf(1, "tail: read error\n");
+		exit();
+	}
+
+	int current_line_number = 0;
+	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
+	
+	for(i = 0; i<n; i++) {
+		if(buf[i] == '\n') {
+			current_line_number++;
+		}
+		if(current_line_number == index_of_first_line) {
+			write(1, &buf[i], n);
+			break;
+		}
+	}
+}
+
+void tail_stdin(int fd, char *name) {
+
+	int n, total_number_of_lines;
+	total_number_of_lines = 0;
+	int char_count = 0;
+	int i = 0;
+
+	while((n = read(fd, &buf[char_count], sizeof(buf))) > 0){
+		for(i = char_count; i < (n + char_count); i++){
+			if(buf[i] == '\n')
+				total_number_of_lines++;
+		}
+		char_count += n;
+	}
+
+	int current_line_number = 0;
+	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
+
+	for(i = 0; i<char_count; i++){
+		if(buf[i] == '\n') {
+			current_line_number++;
+		}
+		if(current_line_number == index_of_first_line) {
+			write(1, &buf[i], char_count);
+			break;
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 
-	if(argc <= 1) { //just tail
-		tail_stdi(0, "");
+	if(argc <= 1) {
+		tail_stdin(0, "");
 		exit();
 	}
 	
@@ -106,8 +111,8 @@ int main(int argc, char *argv[]) {
 	if(tail_len_flag) set_tail_len(str_cp);
 	int fd, x, start_index;
 
-	if((argc <= 2) && (tail_len_flag)) { //either (tail tail_flag ^ tail file_name)
-		tail_stdi(0, "");
+	if((argc <= 2) && (tail_len_flag)) {
+		tail_stdin(0, "");
 		exit();
 	}
 

@@ -58,12 +58,14 @@ void tail(int fd, char *name) {
 
 	int current_line_number = 0;
 	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
-	
+	int num_chars_passed = 0;
+
 	for(i = 0; i<n; i++) {
 		if(current_line_number == index_of_first_line) {
-			write(1, &buf[i], n);
+			write(1, &buf[i], n - num_chars_passed);
 			break;
 		}
+		num_chars_passed++;
 		if(buf[i] == '\n') {
 			current_line_number++;
 		}
@@ -87,12 +89,14 @@ void tail_stdin(int fd, char *name) {
 
 	int current_line_number = 0;
 	int index_of_first_line = get_index_of_first_line(total_number_of_lines, tail_len);
+	int num_chars_passed = 0;
 
 	for(i = 0; i<char_count; i++){
 		if(current_line_number == index_of_first_line) {
-			write(1, &buf[i], char_count);
+			write(1, &buf[i], char_count - num_chars_passed);
 			break;
 		}
+		num_chars_passed++;
 		if(buf[i] == '\n') {
 			current_line_number++;
 		}

@@ -52,31 +52,29 @@ runcmd(struct cmd *cmd)
     exit(0);
   
   switch(cmd->type){
-  default:
-    fprintf(stderr, "unknown runcmd\n");
-    exit(-1);
+    default:
+      fprintf(stderr, "unknown runcmd\n");
+      exit(-1);
 
-  case ' ':
-    ecmd = (struct execcmd*)cmd;
-    if(ecmd->argv[0] == 0)
-      exit(0);
-    fprintf(stderr, "exec not implemented\n");
-    // Your code here ...
-    break;
+    case ' ':
+      ecmd = (struct execcmd*)cmd;
+      if(ecmd->argv[0] == 0) exit(0);
+      execvp(ecmd->argv[0], ecmd->argv);
+      break;
 
-  case '>':
-  case '<':
-    rcmd = (struct redircmd*)cmd;
-    fprintf(stderr, "redir not implemented\n");
-    // Your code here ...
-    runcmd(rcmd->cmd);
-    break;
+    case '>':
+    case '<':
+      rcmd = (struct redircmd*)cmd;
+      fprintf(stderr, "redir not implemented\n");
+      // Your code here ...
+      runcmd(rcmd->cmd);
+      break;
 
-  case '|':
-    pcmd = (struct pipecmd*)cmd;
-    fprintf(stderr, "pipe not implemented\n");
-    // Your code here ...
-    break;
+    case '|':
+      pcmd = (struct pipecmd*)cmd;
+      fprintf(stderr, "pipe not implemented\n");
+      // Your code here ...
+      break;
   }    
   exit(0);
 }
@@ -110,7 +108,7 @@ main(void)
         fprintf(stderr, "cannot cd %s\n", buf+3);
       continue;
     }
-    if(fork1() == 0)
+    if(fork1() == 0) //SCHEDULER
       runcmd(parsecmd(buf));
     wait(&r);
   }
@@ -244,7 +242,7 @@ parsecmd(char *s)
   char *es;
   struct cmd *cmd;
 
-  es = s + strlen(s);
+  es = s + strlen(s); 
   cmd = parseline(&s, es);
   peek(&s, es, "");
   if(s != es){

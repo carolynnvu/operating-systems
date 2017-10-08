@@ -65,9 +65,21 @@ runcmd(struct cmd *cmd)
     case '>':
     case '<':
       rcmd = (struct redircmd*)cmd;
-      fprintf(stderr, "redir not implemented\n");
-      // Your code here ...
+      int fd = open(rcmd->file, rcmd->mode);
+      if(fd < 0) { 
+        perror(rcmd->file);
+        exit(1);
+      }
+      if(dup2(fd, rcmd->fd) < 0) {
+        perror(rcmd->file);
+        exit(1);
+      }
+      printf("flag %d\n", rcmd->mode);
       runcmd(rcmd->cmd);
+      close(fd);
+
+      //HANDLE CREATING A FILE THAT DOESN'T EXIT, PERMISSIONS, ls > newFile.txt
+      //[Permission denied]
       break;
 
     case '|':

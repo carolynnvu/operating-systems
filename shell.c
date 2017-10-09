@@ -10,6 +10,8 @@
 // Simplifed xv6 shell.
 
 #define MAXARGS 10
+#define WCT_FLAG (O_WRONLY|O_CREAT|O_TRUNC)
+#define URWX_GR_OR 0644
 
 // All commands have at least a type. Have looked at the type, the code
 // typically casts the *cmd to some specific cmd type.
@@ -65,7 +67,11 @@ runcmd(struct cmd *cmd)
     case '>':
     case '<':
       rcmd = (struct redircmd*)cmd;
-      int fd = open(rcmd->file, rcmd->mode);
+      int fd;
+      if(rcmd->mode == WCT_FLAG) 
+        fd = open(rcmd->file, rcmd->mode, URWX_GR_OR);
+      else 
+        fd = open(rcmd->file, rcmd->mode);
       if(fd < 0) { 
         perror(rcmd->file);
         exit(1);
@@ -74,12 +80,8 @@ runcmd(struct cmd *cmd)
         perror(rcmd->file);
         exit(1);
       }
-      printf("flag %d\n", rcmd->mode);
       runcmd(rcmd->cmd);
       close(fd);
-
-      //HANDLE CREATING A FILE THAT DOESN'T EXIT, PERMISSIONS, ls > newFile.txt
-      //[Permission denied]
       break;
 
     case '|':

@@ -11,7 +11,7 @@
 
 #define MAXARGS 10
 #define WCT_FLAG (O_WRONLY|O_CREAT|O_TRUNC)
-#define O_CREAT_PERMISSIONS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+#define PERMISSIONS (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 
 // All commands have at least a type. Have looked at the type, the code
 // typically casts the *cmd to some specific cmd type.
@@ -69,7 +69,7 @@ runcmd(struct cmd *cmd)
       rcmd = (struct redircmd*)cmd;
       int fd;
       if(rcmd->mode == WCT_FLAG)
-        fd = open(rcmd->file, rcmd->mode, O_CREAT_PERMISSIONS);
+        fd = open(rcmd->file, rcmd->mode, PERMISSIONS);
       else 
         fd = open(rcmd->file, rcmd->mode);
       if(fd < 0) { 
@@ -86,8 +86,31 @@ runcmd(struct cmd *cmd)
 
     case '|':
       pcmd = (struct pipecmd*)cmd;
-      fprintf(stderr, "pipe not implemented\n");
-      // Your code here ...
+      int fds[2];
+      if(pipe(fds) < 0) {
+        perror("pipe");
+        exit(1);
+      }
+      if((p[0] = fork()) == 0) {
+        dup2(fds[1], STDOUT_FILENO);
+        close(fds[0]);
+        runcmd(pcmd->left);
+      } else if(p[0] < 0) {
+        perror("pipe");
+        exit(1);
+      }
+      if((p[1] = fork()) == 0) { 
+        dup2(fds[0], STDIN_FILENO);
+        close(fds[1]);
+        runcmd(pcmd->right);
+      } else if(p[1] < 0) {
+        perror("pipe");
+        exit(1);
+      }
+      close(fds[0]);
+      close(fds[1]);
+      wait(&p[0]);
+      wait(&p[1]);
       break;
   }    
   exit(0);

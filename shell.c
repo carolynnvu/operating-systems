@@ -11,7 +11,7 @@
 
 #define MAXARGS 10
 #define WCT_FLAG (O_WRONLY|O_CREAT|O_TRUNC)
-#define URWX_GR_OR 0644
+#define O_CREAT_PERMISSIONS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
 // All commands have at least a type. Have looked at the type, the code
 // typically casts the *cmd to some specific cmd type.
@@ -68,8 +68,8 @@ runcmd(struct cmd *cmd)
     case '<':
       rcmd = (struct redircmd*)cmd;
       int fd;
-      if(rcmd->mode == WCT_FLAG) 
-        fd = open(rcmd->file, rcmd->mode, URWX_GR_OR);
+      if(rcmd->mode == WCT_FLAG)
+        fd = open(rcmd->file, rcmd->mode, O_CREAT_PERMISSIONS);
       else 
         fd = open(rcmd->file, rcmd->mode);
       if(fd < 0) { 

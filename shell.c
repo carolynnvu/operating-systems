@@ -86,29 +86,32 @@ runcmd(struct cmd *cmd)
 
     case '|':
       pcmd = (struct pipecmd*)cmd;
-      int fds[2];
-      if(pipe(fds) < 0) {
+      if(pipe(p) < 0) {
         perror("pipe");
         exit(1);
       }
-      if((p[0] = fork()) == 0) {
-        dup2(fds[1], STDOUT_FILENO);
-        close(fds[0]);
+      if(fork() == 0) {
+        close(STDOUT_FILENO);
+        dup2(p[1], STDOUT_FILENO);
+        close(p[0]);
+        close(p[1]);
         runcmd(pcmd->left);
       } else if(p[0] < 0) {
         perror("pipe");
         exit(1);
       }
-      if((p[1] = fork()) == 0) { 
-        dup2(fds[0], STDIN_FILENO);
-        close(fds[1]);
+      if(fork() == 0) { 
+        close(STDIN_FILENO);
+        dup2(p[0], STDIN_FILENO);
+        close(p[0]);
+        close(p[1]);
         runcmd(pcmd->right);
       } else if(p[1] < 0) {
         perror("pipe");
         exit(1);
       }
-      close(fds[0]);
-      close(fds[1]);
+      close(p[0]);
+      close(p[1]);
       wait(&p[0]);
       wait(&p[1]);
       break;
